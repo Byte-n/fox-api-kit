@@ -1,0 +1,52 @@
+{
+  "name": "fox-api-kit",
+  "version": "0.0.1-beta.0",
+  "description": "Apifox OpenAPI CLI toolkit for fetching API paths and details",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "fox-api-kit": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "packageManager": "pnpm@10.28.2",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "tsx src/dev.ts",
+    "build": "tsup",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "apifox",
+    "openapi",
+    "cli",
+    "api",
+    "fox-api-kit"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Byte-n/fox-api-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Byte-n/fox-api-kit/issues"
+  },
+  "homepage": "https://github.com/Byte-n/fox-api-kit#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "commander": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.22.3",
+    "typescript": "^5.5.3"
+  }
+}
