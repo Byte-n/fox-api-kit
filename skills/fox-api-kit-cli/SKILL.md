@@ -21,5 +21,5 @@ description: 在需要获取接口详情、接口定义、API 规范、查看某
 ## 步骤 2：调用命令
 
 ```bash
-npx -y fox-api-kit@0.0.1-beta.0 api-detail -p <project-name> --path <api-path>
+npx -y fox-api-kit@latest api-detail -p <project-name> --path <api-path>
 ```
