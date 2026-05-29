@@ -8,7 +8,7 @@ export const COMMAND_NAME = 'api-detail';
 
 export const apiDetailCommand = new Command(COMMAND_NAME)
   .description('获取接口详情（返回完整的 OpenAPI 3.1.0 规范结构，仅包含相关内容）')
-  .requiredOption('-p, --project-name <name>', '项目名称')
+  .option('-p, --project-name <name>', '项目名称')
   .requiredOption('--path <path>', 'API 路径')
   .option('-m, --method <method>', 'HTTP 方法')
   .action(async (opts) => {

@@ -30,12 +30,12 @@ pnpm add -g fox-api-kit
 按关键词搜索接口列表。
 
 ```bash
-fox-api-kit search-apis -p <项目名称> -k <关键词>
+fox-api-kit search-apis -k <关键词>
 ```
 
 | 选项 | 简写 | 必填 | 说明 |
 |------|------|------|------|
-| `--project-name` | `-p` | 是 | 项目名称 |
+| `--project-name` | `-p` | 否 | 项目名称；`APIFOX_PROJECT_MAP` 只有一个项目时会自动使用该项目 |
 | `--keyword` | `-k` | 是 | 搜索关键词 |
 | `--module` | | 否 | 按模块过滤 |
 | `--method` | `-m` | 否 | 按 HTTP 方法过滤 |
@@ -45,12 +45,12 @@ fox-api-kit search-apis -p <项目名称> -k <关键词>
 获取指定接口的完整 OpenAPI 3.1.0 规范详情。
 
 ```bash
-fox-api-kit api-detail -p <项目名称> --path <API路径>
+fox-api-kit api-detail --path <API路径>
 ```
 
 | 选项 | 简写 | 必填 | 说明 |
 |------|------|------|------|
-| `--project-name` | `-p` | 是 | 项目名称 |
+| `--project-name` | `-p` | 否 | 项目名称；`APIFOX_PROJECT_MAP` 只有一个项目时会自动使用该项目 |
 | `--path` | | 是 | API 路径 |
 | `--method` | `-m` | 否 | HTTP 方法（路径下仅有单个方法时可省略） |
 

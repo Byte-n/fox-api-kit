@@ -5,6 +5,15 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.0.2] - 2026-05-29
+
+### 变更
+
+- `search-apis` 和 `api-detail` 的 `--project-name` 参数改为可选
+- 当 `APIFOX_PROJECT_MAP` 只有一个项目时，会直接自动使用该项目
+- 当存在多个项目且未传 `--project-name` 时，提示可选项目并要求指定项目名
+- 更新 fox-api-kit skill 文档，调整 `project-name` 识别和调用策略
+
 ## [0.0.1-beta.0] - 2025-05-20
 
 ### 新增

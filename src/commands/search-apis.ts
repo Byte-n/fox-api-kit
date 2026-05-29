@@ -7,7 +7,7 @@ export const COMMAND_NAME = 'search-apis';
 
 export const searchApisCommand = new Command(COMMAND_NAME)
   .description('搜索接口')
-  .requiredOption('-p, --project-name <name>', '项目名称')
+  .option('-p, --project-name <name>', '项目名称')
   .requiredOption('-k, --keyword <keyword>', '关键词')
   .option('--module <module>', '模块过滤')
   .option('-m, --method <method>', 'HTTP 方法过滤')

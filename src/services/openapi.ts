@@ -7,7 +7,7 @@ const APIFOX_BASE_URL = 'https://api.apifox.com/v1';
 /**
  * 获取 OpenAPI 数据
  */
-export async function fetchOpenAPI(projectName: string): Promise<OasDocument> {
+export async function fetchOpenAPI(projectName?: string): Promise<OasDocument> {
   const token = process.env.APIFOX_ACCESS_TOKEN;
   if (!token) {
     throw new Error('[FATAL] Missing environment variable APIFOX_ACCESS_TOKEN. Please configure it and retry.');

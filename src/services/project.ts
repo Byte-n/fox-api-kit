@@ -3,7 +3,7 @@ import { ProjectMapEntry } from '../types';
 /**
  * 通过项目名称查找项目 ID
  */
-export function resolveProjectId(projectName: string): string {
+export function resolveProjectId(projectName?: string): string {
   const mapJson = process.env.APIFOX_PROJECT_MAP;
   if (!mapJson) {
     throw new Error('[FATAL] Missing environment variable APIFOX_PROJECT_MAP. Please configure it and retry.');
@@ -18,6 +18,15 @@ export function resolveProjectId(projectName: string): string {
 
   if (!Array.isArray(map)) {
     throw new Error('[FATAL] Environment variable APIFOX_PROJECT_MAP must be a JSON array.');
+  }
+
+  if (map.length === 1) {
+    return String(map[0].value);
+  }
+
+  if (!projectName) {
+    const names = map.map((item) => item.label).join(', ');
+    throw new Error(`[ERROR] Missing --project-name. Available projects: ${names}. Please specify a project name and retry.`);
   }
 
   const entry = map.find((item) => item.label === projectName);
