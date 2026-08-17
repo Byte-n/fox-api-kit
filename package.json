@@ -1,6 +1,6 @@
 {
   "name": "fox-api-kit",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Apifox OpenAPI CLI toolkit for fetching API paths and details",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,6 +18,8 @@
   "scripts": {
     "dev": "tsx src/dev.ts",
     "build": "tsup",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [
@@ -45,8 +47,10 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "tsup": "^8.5.1",
     "tsx": "^4.22.3",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vitest": "^4.1.10"
   }
 }

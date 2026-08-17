@@ -15,29 +15,28 @@ pnpm add -g fox-api-kit
 | 变量名 | 说明 |
 |--------|------|
 | `APIFOX_ACCESS_TOKEN` | Apifox API 访问令牌（必填） |
-| `APIFOX_PROJECT_MAP` | 项目名称与 ID 的映射，JSON 数组格式（必填） |
-
-`APIFOX_PROJECT_MAP` 示例：
-
-```json
-[{"label": "my-project", "value": 123456}]
-```
 
 ## 命令
 
-### `search-apis`
+### `list-projects`
 
-按关键词搜索接口列表。
+通过 Apifox 开放 API 列出当前 `APIFOX_ACCESS_TOKEN` 可访问的所有项目（跨团队聚合，返回项目 ID、名称及所属团队）。
 
 ```bash
-fox-api-kit search-apis -p <项目名称> -k <关键词>
+fox-api-kit list-projects
+```
+
+### `search-apis`
+
+跨全部可访问项目按关键字模糊搜索接口（匹配接口名称或路径，不区分大小写）。
+
+```bash
+fox-api-kit search-apis -k <关键词>
 ```
 
 | 选项 | 简写 | 必填 | 说明 |
 |------|------|------|------|
-| `--project-name` | `-p` | 是 | 项目名称 |
-| `--keyword` | `-k` | 是 | 搜索关键词 |
-| `--module` | | 否 | 按模块过滤 |
+| `--keyword` | `-k` | 是 | 搜索关键词（匹配接口名称或路径） |
 | `--method` | `-m` | 否 | 按 HTTP 方法过滤 |
 
 ### `api-detail`
@@ -45,12 +44,12 @@ fox-api-kit search-apis -p <项目名称> -k <关键词>
 获取指定接口的完整 OpenAPI 3.1.0 规范详情。
 
 ```bash
-fox-api-kit api-detail -p <项目名称> --path <API路径>
+fox-api-kit api-detail --path <API路径>
 ```
 
 | 选项 | 简写 | 必填 | 说明 |
 |------|------|------|------|
-| `--project-name` | `-p` | 是 | 项目名称 |
+| `--project-name` | `-p` | 否 | 项目名称；可访问项目仅一个时会自动使用该项目 |
 | `--path` | | 是 | API 路径 |
 | `--method` | `-m` | 否 | HTTP 方法（路径下仅有单个方法时可省略） |
 

@@ -15,7 +15,8 @@ export function extractModule(pathStr: string): string {
     }
     return 'api';
   } else if (parts[0] === 'rpc') {
-    return parts.length >= 2 ? `rpc.${parts[1]}` : 'rpc';
+    // 顶部 parts.length < 2 已早退，此处 rpc 必有第二段
+    return `rpc.${parts[1]}`;
   }
   return 'other';
 }
