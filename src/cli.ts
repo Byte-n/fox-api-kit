@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { apiDetailCommand } from './commands/api-detail';
 import { searchApisCommand } from './commands/search-apis';
+import { listProjectsCommand } from './commands/list-projects';
 
 declare const __VERSION__: string;
 declare const __DESCRIPTION__: string;
@@ -15,6 +16,7 @@ export function createProgram(): Command {
 
   program.addCommand(apiDetailCommand);
   program.addCommand(searchApisCommand);
+  program.addCommand(listProjectsCommand);
 
   return program;
 }
