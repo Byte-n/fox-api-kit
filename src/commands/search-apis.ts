@@ -9,9 +9,10 @@ export const COMMAND_NAME = 'search-apis';
 const PROJECT_FETCH_INTERVAL_MS = 100;
 
 /** 命中单条：关键字匹配名称或路径（不区分大小写），可按 HTTP 方法过滤 */
-function hit(api: ApiIndexItem, keyword: string, method?: string): boolean {
-  if (method && api.method.toUpperCase() !== method) return false;
-  return api.name.toLowerCase().includes(keyword) || api.path.toLowerCase().includes(keyword);
+export function hit(api: ApiIndexItem, keyword: string, method?: string): boolean {
+  const kw = keyword.toLowerCase();
+  if (method && api.method.toUpperCase() !== method.toUpperCase()) return false;
+  return api.name.toLowerCase().includes(kw) || api.path.toLowerCase().includes(kw);
 }
 
 /**
@@ -21,7 +22,7 @@ function hit(api: ApiIndexItem, keyword: string, method?: string): boolean {
  * 3. export-openapi（官方导出，最重但可作最终兜底；不含 Apifox 接口 id）
  * 全部失败则抛出最后一次错误，由调用方 WARN 跳过该项目。
  */
-async function fetchProjectApis(projectId: string): Promise<ApiIndexItem[]> {
+export async function fetchProjectApis(projectId: string): Promise<ApiIndexItem[]> {
   try {
     return flattenApiTree(await fetchApiTree(projectId));
   } catch {
@@ -39,7 +40,7 @@ async function fetchProjectApis(projectId: string): Promise<ApiIndexItem[]> {
 }
 
 /** 从 OpenAPI 文档提取接口索引（无 Apifox id，置 0 标记来源） */
-function extractApisFromOas(oas: OasDocument): ApiIndexItem[] {
+export function extractApisFromOas(oas: OasDocument): ApiIndexItem[] {
   const out: ApiIndexItem[] = [];
   for (const [pathStr, pathItem] of Object.entries(oas.paths ?? {})) {
     for (const [method, operation] of Object.entries(pathItem)) {
