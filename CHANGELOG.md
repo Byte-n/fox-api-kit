@@ -5,6 +5,16 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 0.1.1
+
+### 新增
+
+- `search-apis` 新增 `--project-name` 选项：指定项目名称时仅在该项目内检索，项目不存在时报错并列出可用项目名
+
+### 变更
+
+- 统一 fox-api-kit skill 工作流：搜索接口与获取接口详情均支持指定 `project-name`；未识别到 project-name 时搜索接口回退为跨全部项目聚合检索
+
 ## 0.1.0
 
 ### 新增
