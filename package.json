@@ -1,6 +1,6 @@
 {
   "name": "fox-api-kit",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Apifox OpenAPI CLI toolkit for fetching API paths and details",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
