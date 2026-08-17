@@ -17,7 +17,7 @@ const projectMocks = vi.hoisted(() => ({
 
 vi.mock('../src/services/project', () => projectMocks);
 
-import { extractApisFromOas, fetchProjectApis, groupHitsByTeam, hit, searchApisCommand } from '../src/commands/search-apis';
+import { extractApisFromOas, fetchProjectApis, filterProjectsByName, groupHitsByTeam, hit, searchApisCommand } from '../src/commands/search-apis';
 import { AccessibleProject, ApiTreeNode, SearchHit } from '../src/types';
 
 describe('hit', () => {
@@ -171,6 +171,34 @@ describe('groupHitsByTeam', () => {
   });
 });
 
+describe('filterProjectsByName', () => {
+  const projects: AccessibleProject[] = [
+    { id: 11, name: 'proj-a', teamId: 1, teamName: '团队A' },
+    { id: 12, name: 'proj-b', teamId: 1, teamName: '团队A' },
+    { id: 21, name: 'proj-a', teamId: 2, teamName: '团队B' }, // 跨团队同名
+  ];
+
+  it('未指定名称时原样返回全部项目', () => {
+    expect(filterProjectsByName(projects)).toBe(projects);
+  });
+
+  it('指定名称时仅保留名称完全匹配的项目（跨团队同名一并保留）', () => {
+    const matched = filterProjectsByName(projects, 'proj-a');
+    expect(matched).toHaveLength(2);
+    expect(matched.map((p) => p.id)).toEqual([11, 21]);
+  });
+
+  it('指定名称但无匹配项时抛错并列出可用项目名', () => {
+    expect(() => filterProjectsByName(projects, 'missing')).toThrow(
+      /Project "missing" not found.*Available projects: .*proj-b/
+    );
+  });
+
+  it('指定名称但可访问项目为空时抛错', () => {
+    expect(() => filterProjectsByName([], 'missing')).toThrow(/Project "missing" not found/);
+  });
+});
+
 describe('searchApisCommand action 端到端', () => {
   beforeEach(() => {
     projectMocks.fetchAccessibleProjects.mockReset();
@@ -256,5 +284,51 @@ describe('searchApisCommand action 端到端', () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('[WARN] 拉取项目「proj-bad」'));
     logSpy.mockRestore();
     errorSpy.mockRestore();
+  });
+
+  it('传入 -p 时仅在指定项目内检索，其余项目不参与拉取', async () => {
+    const projects: AccessibleProject[] = [
+      { id: 11, name: 'proj-a', teamId: 1, teamName: '团队A' },
+      { id: 12, name: 'proj-b', teamId: 1, teamName: '团队A' },
+    ];
+    projectMocks.fetchAccessibleProjects.mockResolvedValue(projects);
+    // 两个项目均存在匹配 'user' 的接口，用以证明结果差异源于过滤而非关键字
+    mocks.fetchApiTree.mockImplementation((id: string) => {
+      if (id === '11') {
+        return Promise.resolve([
+          { key: '1', type: 'apiDetail', name: 'GetUser', api: { id: 1, name: 'GetUser', method: 'GET', path: '/users' } },
+        ]);
+      }
+      return Promise.resolve([
+        { key: '2', type: 'apiDetail', name: 'GetUser', api: { id: 2, name: 'GetUser', method: 'POST', path: '/users' } },
+      ]);
+    });
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const root = new Command('fox-api-kit').addCommand(searchApisCommand);
+    root.parse(['node', 'test', 'search-apis', '-k', 'user', '-p', 'proj-b']);
+    await new Promise((r) => setTimeout(r, 0));
+
+    const printed = JSON.parse(logSpy.mock.calls.at(-1)![0] as string);
+    expect(printed.total).toBe(1);
+    expect(printed.teams[0].projects[0]).toMatchObject({ projectId: 12, projectName: 'proj-b' });
+    expect(printed.teams[0].projects[0].apis).toEqual([{ id: 2, method: 'POST', path: '/users', name: 'GetUser' }]);
+    // 仅拉取了被指定的项目，另一项目被过滤
+    expect(mocks.fetchApiTree).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchApiTree).toHaveBeenCalledWith('12');
+    logSpy.mockRestore();
+  });
+
+  it('传入 -p 但项目名不存在时抛错并列出可用项目', async () => {
+    const projects: AccessibleProject[] = [
+      { id: 11, name: 'proj-a', teamId: 1, teamName: '团队A' },
+      { id: 12, name: 'proj-b', teamId: 1, teamName: '团队A' },
+    ];
+    projectMocks.fetchAccessibleProjects.mockResolvedValue(projects);
+
+    const root = new Command('fox-api-kit').addCommand(searchApisCommand);
+    await expect(
+      root.parseAsync(['node', 'test', 'search-apis', '-k', 'user', '-p', 'missing'])
+    ).rejects.toThrow(/Project "missing" not found.*Available projects/);
   });
 });

@@ -1,12 +1,12 @@
 import { Command } from 'commander';
-import { ApiIndexItem, HTTP_METHODS, OasDocument, SearchHit } from '../types';
+import { AccessibleProject, ApiIndexItem, HTTP_METHODS, OasDocument, SearchHit } from '../types';
 import { fetchApiTree, fetchHttpApis, fetchOpenAPIByProjectId, flattenApiTree } from '../services/openapi';
 import { fetchAccessibleProjects } from '../services/project';
 
 export const COMMAND_NAME = 'search-apis';
 
 /** 项目间请求间隔（毫秒），串行拉取避免瞬时调用频次过高 */
-const PROJECT_FETCH_INTERVAL_MS = 100;
+const PROJECT_FETCH_INTERVAL_MS = 30;
 
 /** 命中单条：关键字匹配名称或路径（不区分大小写），可按 HTTP 方法过滤 */
 export function hit(api: ApiIndexItem, keyword: string, method?: string): boolean {
@@ -112,15 +112,32 @@ export function groupHitsByTeam(hits: SearchHit[]): {
   };
 }
 
+/**
+ * 按项目名称过滤可访问项目列表（纯函数，无 I/O）。
+ * - 未指定名称时返回全部项目（跨项目聚合搜索）；
+ * - 指定名称时仅保留名称完全匹配的项目（跨团队同名时一并保留）；
+ * - 指定名称但无匹配项时抛错并列出可用项目名，错误信息与 resolveProjectId 保持一致。
+ */
+export function filterProjectsByName(projects: AccessibleProject[], projectName?: string): AccessibleProject[] {
+  if (!projectName) return projects;
+  const matched = projects.filter((p) => p.name === projectName);
+  if (matched.length === 0) {
+    const names = projects.map((p) => p.name).join(', ');
+    throw new Error(`[ERROR] Project "${projectName}" not found. Available projects: ${names}. Please choose a valid project name and retry.`);
+  }
+  return matched;
+}
+
 export const searchApisCommand = new Command(COMMAND_NAME)
   .description('跨全部项目按关键字模糊搜索接口（匹配接口名称或路径，不区分大小写）')
   .requiredOption('-k, --keyword <keyword>', '关键词（匹配接口名称或路径）')
   .option('-m, --method <method>', 'HTTP 方法过滤')
+  .option('-p, --project-name <name>', '仅在指定项目内检索（项目名称；未指定则跨全部可访问项目检索，项目不存在时报错）')
   .action(async (opts) => {
     const keyword = (opts.keyword as string).toLowerCase();
     const method = (opts.method as string | undefined)?.toUpperCase();
 
-    const projects = await fetchAccessibleProjects();
+    const projects = filterProjectsByName(await fetchAccessibleProjects(), opts.projectName as string | undefined);
     const hits: SearchHit[] = [];
 
     // 串行拉取各项目接口索引并聚合，项目间加小间隔，避免一次性打高频次请求
