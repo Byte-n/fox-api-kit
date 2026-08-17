@@ -19,12 +19,31 @@ metadata:
 
 ---
 
-## 搜索接口流程
+## 工作流程
 
-当用户需要按关键字查找接口（给出的是接口名称或路径的一部分，而非完整路径）时使用。`search-apis` **跨全部项目**搜索，无需指定
-`project-name`。
+无论是搜索接口还是获取接口详情，都先**尝试获取 `project-name`**，再根据当前任务调用对应命令。
 
-### 步骤 1：执行 `search-apis` 按关键字搜索
+### 步骤 1：尝试获取 `project-name`
+
+按《`project-name` 获取》章节执行：先 `list-projects` 取项目列表，再从上下文推断候选并比对。「尝试」获取 `project-name`，若没有合适的则记为「未识别到」。
+
+### 步骤 2：根据当前任务调用命令
+
+#### 任务 A：搜索接口
+
+当用户给出的是关键字（接口名称或路径的一部分，而非完整路径）时，执行 `search-apis`：
+
+- 已识别到 `project-name` 时：
+
+```bash
+# 必填 -k，按关键字模糊匹配接口名称与路径（不区分大小写）
+npx -y fox-api-kit@latest search-apis -k <keyword> -p <project-name>
+
+# 可选 -m 按 HTTP 方法过滤
+npx -y fox-api-kit@latest search-apis -k <keyword> -p <project-name> -m <GET|POST|PUT|DELETE|PATCH>
+```
+
+- 未识别到 `project-name` 时：
 
 ```bash
 # 必填 -k，按关键字模糊匹配接口名称与路径（不区分大小写）
@@ -34,29 +53,27 @@ npx -y fox-api-kit@latest search-apis -k <keyword>
 npx -y fox-api-kit@latest search-apis -k <keyword> -m <GET|POST|PUT|DELETE|PATCH>
 ```
 
----
+#### 任务 B：获取接口详情
 
-## 查询接口文档流程
-
-### 步骤 1: 确定 `project-name` 参数
-
-按 《`project-name` 获取》 章节获取
-
-### 步骤 2：调用命令
-
-根据步骤 2 确定的结果选择命令：
+当已知完整接口路径、需要请求/响应/字段定义时，执行 `api-detail`：
 
 - 已识别到 `project-name` 时：
 
 ```bash
+# 必填 --path；-p 指定项目
 npx -y fox-api-kit@latest api-detail -p <project-name> --path <api-path>
+
+# 可选 -m 指定 HTTP 方法（路径下仅有单个方法时可省略）
+npx -y fox-api-kit@latest api-detail -p <project-name> --path <api-path> -m <method>
 ```
 
-- 未识别到 `project-name` 时：
+- 未识别到 `project-name` 时（仅可访问项目唯一、命令可自动解析时使用）：
 
 ```bash
 npx -y fox-api-kit@latest api-detail --path <api-path>
 ```
+
+---
 
 ## `project-name` 获取
 
@@ -71,7 +88,7 @@ npx -y fox-api-kit@latest list-projects
 ### 步骤 2：根据已有上下文信息从「项目列表」中确定 `project-name`
 
 以步骤 1 获取的「项目列表」为唯一候选来源。先从当前上下文信息（用户当前消息、任务背景、前文已确定的信息）中推断候选项目，再与列表比对确定
-`project-name`。**凡是无法唯一命中的情况，必须使用 `AskUserQuestion` 工具让用户从列表中选择，严禁自己猜测。**
+`project-name`。**无法唯一命中时：搜索接口可直接跳过 `-p`（见《工作流程》步骤 1）；获取接口详情必须使用 `AskUserQuestion` 工具让用户从列表中选择，严禁自己猜测。**
 
 1. 基于已有上下文推断候选项目名：
     - 显式关键词：「项目/项目名/应用/服务/系统/后台/端」+ 名词短语。
