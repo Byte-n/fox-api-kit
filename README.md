@@ -28,7 +28,7 @@ fox-api-kit list-projects
 
 ### `search-apis`
 
-按关键词搜索接口列表。
+跨全部可访问项目按关键字模糊搜索接口（匹配接口名称或路径，不区分大小写）。
 
 ```bash
 fox-api-kit search-apis -k <关键词>
@@ -36,9 +36,7 @@ fox-api-kit search-apis -k <关键词>
 
 | 选项 | 简写 | 必填 | 说明 |
 |------|------|------|------|
-| `--project-name` | `-p` | 否 | 项目名称；可访问项目仅一个时会自动使用该项目 |
-| `--keyword` | `-k` | 是 | 搜索关键词 |
-| `--module` | | 否 | 按模块过滤 |
+| `--keyword` | `-k` | 是 | 搜索关键词（匹配接口名称或路径） |
 | `--method` | `-m` | 否 | 按 HTTP 方法过滤 |
 
 ### `api-detail`
