@@ -61,6 +61,57 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** 聚合结果内 api 项：源数据中的 team/project 冗余已在嵌套层级中体现，故去除 */
+type ApiHit = { id: number; method: string; path: string; name: string };
+
+/**
+ * 将全部命中按 team > project > api 三级嵌套分组（纯函数，无 I/O）。
+ * 返回 { total, teams }，每层带计数（projectCount / apiCount）。
+ */
+export function groupHitsByTeam(hits: SearchHit[]): {
+  total: number;
+  teams: Array<{
+    teamId: number;
+    teamName: string;
+    projectCount: number;
+    projects: Array<{ projectId: number; projectName: string; apiCount: number; apis: ApiHit[] }>;
+  }>;
+} {
+  const teamMap = new Map<
+    number,
+    { teamId: number; teamName: string; projects: Map<number, { projectId: number; projectName: string; apis: ApiHit[] }> }
+  >();
+
+  for (const h of hits) {
+    let team = teamMap.get(h.teamId);
+    if (!team) {
+      team = { teamId: h.teamId, teamName: h.teamName, projects: new Map() };
+      teamMap.set(h.teamId, team);
+    }
+    let project = team.projects.get(h.projectId);
+    if (!project) {
+      project = { projectId: h.projectId, projectName: h.projectName, apis: [] };
+      team.projects.set(h.projectId, project);
+    }
+    project.apis.push({ id: h.id, method: h.method, path: h.path, name: h.name });
+  }
+
+  return {
+    total: hits.length,
+    teams: [...teamMap.values()].map((t) => ({
+      teamId: t.teamId,
+      teamName: t.teamName,
+      projectCount: t.projects.size,
+      projects: [...t.projects.values()].map((p) => ({
+        projectId: p.projectId,
+        projectName: p.projectName,
+        apiCount: p.apis.length,
+        apis: p.apis,
+      })),
+    })),
+  };
+}
+
 export const searchApisCommand = new Command(COMMAND_NAME)
   .description('跨全部项目按关键字模糊搜索接口（匹配接口名称或路径，不区分大小写）')
   .requiredOption('-k, --keyword <keyword>', '关键词（匹配接口名称或路径）')
@@ -101,43 +152,7 @@ export const searchApisCommand = new Command(COMMAND_NAME)
       if (i < projects.length - 1) await sleep(PROJECT_FETCH_INTERVAL_MS);
     }
 
-    // 全部命中按 team > project > api 嵌套呈现
-    /** api 项：源自动去除 team/project 冗余（已在层级中出现） */
-    type ApiHit = { id: number; method: string; path: string; name: string };
-    const teamMap = new Map<
-      number,
-      { teamId: number; teamName: string; projects: Map<number, { projectId: number; projectName: string; apis: ApiHit[] }> }
-    >();
-
-    for (const h of hits) {
-      let team = teamMap.get(h.teamId);
-      if (!team) {
-        team = { teamId: h.teamId, teamName: h.teamName, projects: new Map() };
-        teamMap.set(h.teamId, team);
-      }
-      let project = team.projects.get(h.projectId);
-      if (!project) {
-        project = { projectId: h.projectId, projectName: h.projectName, apis: [] };
-        team.projects.set(h.projectId, project);
-      }
-      project.apis.push({ id: h.id, method: h.method, path: h.path, name: h.name });
-    }
-
-    const output = {
-      keyword: opts.keyword,
-      total: hits.length,
-      teams: [...teamMap.values()].map((t) => ({
-        teamId: t.teamId,
-        teamName: t.teamName,
-        projectCount: t.projects.size,
-        projects: [...t.projects.values()].map((p) => ({
-          projectId: p.projectId,
-          projectName: p.projectName,
-          apiCount: p.apis.length,
-          apis: p.apis,
-        })),
-      })),
-    };
+    const output = { keyword: opts.keyword, ...groupHitsByTeam(hits) };
 
     console.log(JSON.stringify(output, null, 2));
   });

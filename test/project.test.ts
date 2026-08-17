@@ -52,6 +52,13 @@ describe('fetchAccessibleProjects', () => {
     expect(await fetchAccessibleProjects()).toEqual([]);
   });
 
+  it('团队项目响应缺失 data 字段时跳过（?? 兜底）', async () => {
+    mockedHttpRequest
+      .mockResolvedValueOnce(teamsRsp([{ id: 1, name: '团队A' }]))
+      .mockResolvedValueOnce({ success: true });
+    expect(await fetchAccessibleProjects()).toEqual([]);
+  });
+
   it('缺少 access token 时抛错', async () => {
     delete process.env.APIFOX_ACCESS_TOKEN;
     await expect(fetchAccessibleProjects()).rejects.toThrow(/APIFOX_ACCESS_TOKEN/);

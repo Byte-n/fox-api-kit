@@ -11,6 +11,14 @@ describe('extractModule', () => {
     expect(extractModule('/api/v1/users')).toBe('api.users');
   });
 
+  it('api 前缀但仅两级（如 /api/v1）返回 api', () => {
+    expect(extractModule('/api/v1')).toBe('api');
+  });
+
+  it('rpc 前缀单段时被顶层早退拦截返回 other（分支不可达）', () => {
+    expect(extractModule('/rpc')).toBe('other');
+  });
+
   it('api/v3 前缀取第四段为模块', () => {
     expect(extractModule('/api/v3/config/users')).toBe('api.users');
     expect(extractModule('/api/v3/config/orders')).toBe('api.orders');
@@ -60,6 +68,11 @@ describe('resolveRef', () => {
   it('不存在的引用返回 undefined', () => {
     expect(resolveRef(oas, '#/components/schemas/Missing')).toBeUndefined();
   });
+
+  it('ref 路径穿过数组段时返回 undefined（不索引数组）', () => {
+    const withArray = { a: [{ id: 1 }] } as unknown as OasDocument;
+    expect(resolveRef(withArray, '#/a/0')).toBeUndefined();
+  });
 });
 
 describe('resolveAllRefs', () => {
@@ -96,6 +109,20 @@ describe('resolveAllRefs', () => {
     expect(() => resolveAllRefs(oas, sources)).not.toThrow();
     const result = resolveAllRefs(oas, sources);
     expect(result.Self.properties.self.$ref).toBe('#/components/schemas/Self');
+  });
+
+  it('同一 schema 被直接与嵌套双重引用时不会重复解析（visited 跳过）', () => {
+    const doc = {
+      components: {
+        schemas: {
+          A: { type: 'object', properties: { b: { $ref: '#/components/schemas/B' } } },
+          B: { type: 'string' },
+        },
+      },
+    } as unknown as OasDocument;
+    // B 先入 pending：作为 source 直接引用，又作为 A 的嵌套引用
+    const result = resolveAllRefs(doc, [{ $ref: '#/components/schemas/B' }, { $ref: '#/components/schemas/A' }]);
+    expect(Object.keys(result)).toEqual(['B', 'A']);
   });
 
   it('引用不存在的 schema 时抛错', () => {
