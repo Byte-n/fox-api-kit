@@ -38,6 +38,28 @@ npx -y fox-api-kit@latest search-apis -k <keyword> -m <GET|POST|PUT|DELETE|PATCH
 
 ## 查询接口文档流程
 
+### 步骤 1: 确定 `project-name` 参数
+
+按 《`project-name` 获取》 章节获取
+
+### 步骤 2：调用命令
+
+根据步骤 2 确定的结果选择命令：
+
+- 已识别到 `project-name` 时：
+
+```bash
+npx -y fox-api-kit@latest api-detail -p <project-name> --path <api-path>
+```
+
+- 未识别到 `project-name` 时：
+
+```bash
+npx -y fox-api-kit@latest api-detail --path <api-path>
+```
+
+## `project-name` 获取
+
 ### 步骤 1: 获取所有可用的 Apifox 「项目列表」
 
 执行 `list-projects` 命令可获取当前用户所有的项目
@@ -67,19 +89,3 @@ npx -y fox-api-kit@latest list-projects
    （去首尾空白与包裹引号；保留原文大小写、标点、空格、中英文）作为 `project-name`。
 
 > 若无 `AskUserQuestion` 工具，则使用其它类似的工具
-
-### 步骤 3：调用命令
-
-根据步骤 2 确定的结果选择命令：
-
-- 已识别到 `project-name` 时：
-
-```bash
-npx -y fox-api-kit@latest api-detail -p <project-name> --path <api-path>
-```
-
-- 未识别到 `project-name` 时：
-
-```bash
-npx -y fox-api-kit@latest api-detail --path <api-path>
-```
